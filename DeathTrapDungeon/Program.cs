@@ -98,7 +98,7 @@ namespace DeathTrapDungeon
                     // won the fight
                     int gold = monster.Gold;
                     Console.WriteLine("The monster dropped " + gold + " gold coins.");
-                    hero.Gold = gold;
+                    hero.Gold += gold;
                     victories++;
                     Console.WriteLine("You are victorious! Press enter for the next attack!");
                     Console.ReadLine();
