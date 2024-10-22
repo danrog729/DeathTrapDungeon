@@ -73,7 +73,7 @@ namespace DeathTrapDungeon
             {
                 Random random = new Random();
                 int monsterChoice = random.Next(0, 4);
-                Monster monster = new Monster("colour");
+                Enemy monster = new Monster("colour");
                 switch (monsterChoice)
                 {
                     case 0:
@@ -98,7 +98,7 @@ namespace DeathTrapDungeon
                     // won the fight
                     int gold = monster.Gold;
                     Console.WriteLine("The monster dropped " + gold + " gold coins.");
-                    hero.Gold = gold;
+                    hero.Gold += gold;
                     victories++;
                     Console.WriteLine("You are victorious! Press enter for the next attack!");
                     Console.ReadLine();
@@ -161,7 +161,7 @@ namespace DeathTrapDungeon
             }
         }
 
-        static void Combat(Hero hero, Weapon weapon, Monster monster)
+        static void Combat(Hero hero, Weapon weapon, Enemy monster)
         {
             while (hero.CurrentHP > 0 && monster.HitPoints > 0)
             {

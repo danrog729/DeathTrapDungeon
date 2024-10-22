@@ -110,7 +110,7 @@ namespace DeathTrapDungeon
     {
         public Sword() : base()
         {
-            _name = "sword";
+            _name = "Sword";
             modifier = new Modifier("common", 0);
             damage = 6;
             damageChance = 90;
@@ -119,6 +119,8 @@ namespace DeathTrapDungeon
             inspectMessage = "Your sword feels solid in your hands.";
         }
     }
+
+    
 
     public class AxeOfFlames : Weapon
     {
