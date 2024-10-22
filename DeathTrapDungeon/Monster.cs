@@ -9,9 +9,9 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace DeathTrapDungeon
 {
-    public class Monster
+    public abstract class Enemy
     {
-        private string _colour;
+        protected string _colour;
         public string Colour
         {
             get => _colour;
@@ -21,7 +21,7 @@ namespace DeathTrapDungeon
             }
         }
 
-        private string _species;
+        protected string _species;
         public string Species
         {
             get => _species;
@@ -31,7 +31,7 @@ namespace DeathTrapDungeon
             }
         }
 
-        private int _hitPoints;
+        protected int _hitPoints;
         public int HitPoints
         {
             get => _hitPoints;
@@ -41,7 +41,7 @@ namespace DeathTrapDungeon
             }
         }
 
-        private int _maxDamage;
+        protected int _maxDamage;
         public int MaxDamage
         {
             get => _maxDamage;
@@ -51,7 +51,7 @@ namespace DeathTrapDungeon
             }
         }
 
-        private string _attackMessage;
+        protected string _attackMessage;
         public string AttackMessage
         {
             get => _attackMessage;
@@ -61,7 +61,7 @@ namespace DeathTrapDungeon
             }
         }
 
-        private int _gold;
+        protected int _gold;
         public int Gold
         {
             get => _gold;
@@ -71,17 +71,16 @@ namespace DeathTrapDungeon
             }
         }
 
-        public Monster(string newColour)
+        public Enemy(string newColour, string newSpecies, int newHP, int newMaxDamage, string newAttackMessage, int newGoldLowerBound, int newGoldUpperBound)
         {
             _colour = newColour;
-            _species = "monster";
-            _hitPoints = 10;
-            _maxDamage = 5;
-            _attackMessage = "It slashes with its razor sharp claws.";
+            _species = newSpecies;
+            _hitPoints = newHP;
+            _maxDamage = newMaxDamage;
+            _attackMessage = newAttackMessage;
             Random random = new Random();
-            _gold = random.Next(4, 7);
+            _gold = random.Next(newGoldLowerBound, newGoldUpperBound);
         }
-
         public int Attack()
         {
             Random random = new Random();
@@ -100,7 +99,6 @@ namespace DeathTrapDungeon
             }
             return damage;
         }
-
         public void ReceiveDamage(int damage)
         {
             switch (damage)
@@ -117,23 +115,30 @@ namespace DeathTrapDungeon
             }
             _hitPoints -= damage;
         }
-
         public virtual void Talk()
+        {
+
+        }
+    }
+
+    public class Monster : Enemy
+    {
+        public Monster(string newColour) : base(newColour, "monster", 10, 5, "It slashes with its razor sharp claws.", 4, 7)
+        {
+
+        }
+
+        public override void Talk()
         {
             Console.WriteLine("ROAR!! I'm going to eat you!");
         }
     }
 
-    public class Goblin : Monster
+    public class Goblin : Enemy
     {
-        public Goblin(string newColour) : base(newColour)
+        public Goblin(string newColour) : base(newColour, "goblin", 12, 6, "It hits you with a club.", 4, 13)
         {
-            Species = "goblin";
-            HitPoints = 12;
-            MaxDamage = 6;
-            AttackMessage = "It hits you with a club.";
-            Random random = new Random();
-            Gold = random.Next(4, 13);
+
         }
 
         public override void Talk()
@@ -142,16 +147,11 @@ namespace DeathTrapDungeon
         }
     }
 
-    public class Vampire : Monster
+    public class Vampire : Enemy
     {
-        public Vampire(string newColour) : base(newColour)
+        public Vampire(string newColour) : base(newColour, "vampire", 20, 7, "It sinks its fangs into your neck.", 3, 11)
         {
-            Species = "vampire";
-            HitPoints = 20;
-            MaxDamage = 7;
-            AttackMessage = "It sinks its fangs into your neck.";
-            Random random = new Random();
-            Gold = random.Next(3, 11);
+
         }
 
         public override void Talk()
@@ -160,16 +160,11 @@ namespace DeathTrapDungeon
         }
     }
 
-    public class Slime : Monster
+    public class Slime : Enemy
     {
-        public Slime(string newColour) : base(newColour)
+        public Slime(string newColour) : base(newColour, "slime", 8, 4, "It tries to engulf you.", 0, 7)
         {
-            Species = "slime";
-            HitPoints = 8;
-            MaxDamage = 4;
-            AttackMessage = "It tries to engulf you.";
-            Random random = new Random();
-            Gold = random.Next(0, 7);
+
         }
 
         public override void Talk()
