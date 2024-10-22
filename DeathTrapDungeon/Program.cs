@@ -11,124 +11,20 @@ namespace DeathTrapDungeon
 {
     internal class Program
     {
-        static void Main(string[] args)
+        
+        static bool AbilityChoice(string Message)
         {
-            Console.Write("############# Welcome to Death Trap Dungeon! ############\n\n" +
-                "What is your name, mighty warrior? ");
-            string name = Console.ReadLine();
-
-            Console.WriteLine("What manner of warrior are you?\n" +
-                "\t1) Barbarian (20-30 health | 0-8 damage)\n" +
-                "\t2) Wizard (15-25 health | 0-12 damage)\n" +
-                "\t3) Warlock (17-27 health | 0-10 damage)");
-            Hero hero = new Barbarian("name");
-            bool validHero = false;
-            while (!validHero)
+            Console.WriteLine(Message);
+            string Choice = Console.ReadLine();
+            if (Choice.ToLower() == "y")
             {
-                validHero = true;
-                int choice = Valid_Int_Input("");
-                switch (choice)
-                {
-                    case 1:
-                        hero = new Barbarian(name);
-                        break;
-                    case 2:
-                        hero = new Wizard(name);
-                        break;
-                    case 3:
-                        hero = new Warlock(name);
-                        break;
-                    default:
-                        validHero = false;
-                        break;
-                }
+                return true;
             }
-
-            Console.WriteLine("Which weapon is of your choosing?\n" +
-                "\t1) Sword (0-6 damage | 90% hit chance)");
-            Weapon weapon = new Sword();
-            bool validWeapon = false;
-            while (!validWeapon)
+            else
             {
-                validWeapon = true;
-                int choice = Valid_Int_Input("");
-                switch (choice)
-                {
-                    case 1:
-                        weapon = new Sword();
-                        break;
-                    default:
-                        validWeapon = false;
-                        break;
-                }
+                return false;
             }
-            weapon.Randomise_Modifier(1);
-            Console.WriteLine("You pick up a " + weapon.Name);
-            weapon.Inspect();
-
-            Console.WriteLine();
-
-            int victories = 0;
-            while (victories < 10 && hero.CurrentHP > 0)
-            {
-                Random random = new Random();
-                int monsterChoice = random.Next(0, 4);
-                Enemy monster = new Monster("colour");
-                switch (monsterChoice)
-                {
-                    case 0:
-                        monster = new Monster(Random_Colour());
-                        break;
-                    case 1:
-                        monster = new Goblin(Random_Colour());
-                        break;
-                    case 2:
-                        monster = new Vampire(Random_Colour());
-                        break;
-                    case 3:
-                        monster = new Slime(Random_Colour());
-                        break;
-                }
-
-                Console.WriteLine("You are attacked by a " + monster.Colour + " " + monster.Species + ".");
-                monster.Talk();
-                Combat(hero, weapon, monster);
-                if (hero.CurrentHP > 0)
-                {
-                    // won the fight
-                    int gold = monster.Gold;
-                    Console.WriteLine("The monster dropped " + gold + " gold coins.");
-                    hero.Gold += gold;
-                    victories++;
-                    Console.WriteLine("You are victorious! Press enter for the next attack!");
-                    Console.ReadLine();
-                    Console.WriteLine("Gold coins: " + hero.Gold);
-
-                    if (victories < 10)
-                    {
-                        Console.Write("Do you want to visit Ye Olde Dungeon Shoppe (Y/N) ");
-                        if (Console.ReadLine().ToLower() == "y")
-                        {
-                            weapon = Shop(hero, weapon);
-                        }
-                    }
-                }
-                else
-                {
-                    Console.WriteLine(hero.Name + ", you are dead. Death Trap Dungeon claims another victim.");
-                }
-            }
-
-            if (victories == 10)
-            {
-                Console.WriteLine(hero.Name + ", you are the Champion of Champions! Fame and fortune are yours!\n" +
-                    "You leave the dungeon with " + hero.Gold + " gold coins!");
-            }
-            Console.WriteLine("######## GAME OVER ########");
-
-            Console.ReadLine();
         }
-
         static int Valid_Int_Input(string message)
         {
             int output;
@@ -163,46 +59,90 @@ namespace DeathTrapDungeon
 
         static void Combat(Hero hero, Weapon weapon, Enemy monster)
         {
+            int Cooldown= 0; // Cooldown includes cast turn, so "3 turns of cooldown after cast turn" - Cooldown = 4
             while (hero.CurrentHP > 0 && monster.HitPoints > 0)
             {
                 Console.WriteLine("\n######### Hero: " + hero.CurrentHP + " health #########" +
                     " Monster: " + monster.HitPoints + " health #########");
-                bool BaseAttack;
-                string Choice;
-                if (hero is Barbarian) //Hero Specific actions
+                //Hero specific actions
+                bool HeroAttack = true; //Basic hero attack
+                bool MonsterAttack = true; 
+                bool Special = false; //Each Hero types special ability
+                
+                if (hero is Barbarian & Cooldown == 0) 
                 {
-                    Console.WriteLine("Do you choose to rage? Y/N (This uses your turn but allows you to attack twice from next turn, however it also increases the damage you take)")
-                    Choice = Console.ReadLine();
-                    if (Choice.ToLower() == "y")
+                    if (AbilityChoice("Do you choose to rage? Y/N\nThis uses your turn but allows you to attack twice from next turn, however it also increases the damage you take\nThis ability lasts 3 turns | 1 turn cooldown"))
                     {
-                        BaseAttack = false;
+                        Special = true;
+                        HeroAttack = false;
+                        Cooldown = 4;
                     }
                 }
-                else if (hero is Wizard)
+                else if (hero is Wizard & Cooldown == 0)   
                 {
-                    Console.WriteLine("Do you gather magic for a powerful arcane attack? Y/N (This will stun your foe ontop of your regular damage, but you can only use it once a fight)")
+                    if (AbilityChoice("Do you gather magic for a powerful arcane attack? Y/N \nThis will stun your foe and triple your regular damage\nYou can only use it once a fight"))
+                    {
+                        Special = true;
+                        MonsterAttack = false;
+                        Cooldown = -1; // Will only be available once per fight
+                    }
                 }
-                else if (hero is Warlock)
+                else if (hero is Warlock & Cooldown == 0 & hero.CurrentHP > 1)
                 {
-                    Console.WriteLine("Do you sacrifice your lifeforce to obtain boons from your patron? Y/N (You loose 10% of your health but do double the damage")
-                    Base
+                    if (AbilityChoice("Do you sacrifice your lifeforce to obtain boons from your patron? Y/N\nYou loose 10% of your health but do double damage\nThis ability has a 2 turn cooldown"))
+                    {
+                        Special = true;
+                        hero.ReceiveDamage(Convert.ToInt32(Math.Ceiling(hero.CurrentHP * 0.1)));
+                        Cooldown = 3;
+                    }
                 }
-                else
-                {
-                    BaseAttack = true;
-                }
-                if (BaseAttack)
+                //Attacking
+                if (HeroAttack)
                 {
                     Console.WriteLine("Press enter to attack!");
+                    int heroDamage;
                     Console.ReadLine();
-                    int heroDamage = (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+                    if (Special & hero is Wizard)
+                    {
+                        heroDamage = 3 * (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+                    }
+                    else if (Special & hero is Warlock)
+                    {
+                        heroDamage = 2 * (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+                    }
+                    else
+                    {
+                        heroDamage = (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+                    }
                     monster.ReceiveDamage(heroDamage);
+                    //Special actions
+                    if (monster.HitPoints > 0 & hero is Barbarian & Cooldown > 0)
+                    {
+                        Console.WriteLine("Press enter to attack again");
+                        Console.ReadLine();
+                        heroDamage = (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+                        monster.ReceiveDamage(heroDamage);
+                    }
                 }
-                if (monster.HitPoints > 0)
+                //Deffending
+                if (monster.HitPoints > 0 & MonsterAttack)
                 {
                     Console.WriteLine("The " + monster.Species + " attacks...");
                     Console.WriteLine("Press enter to defend!");
-                    hero.ReceiveDamage(monster.Attack());
+                    Console.ReadLine();
+                    if (hero is Barbarian & Cooldown > 0) //Barbarians take 20% more damage whilst raging rounding up
+                    {
+                        hero.ReceiveDamage(Convert.ToInt32(Math.Ceiling(1.2*monster.Attack())));
+                    }
+                    else
+                    {
+                        hero.ReceiveDamage(monster.Attack());
+                    }
+                }
+                //Ability refresh
+                if (Cooldown > 0)
+                {
+                    Cooldown --;
                 }
             }
         }
@@ -297,6 +237,123 @@ namespace DeathTrapDungeon
                 shouldContinue = Console.ReadLine().ToLower() == "y";
             }
             return newWeapon;
+        }
+        static void Main(string[] args)
+        {
+            Console.Write("############# Welcome to Death Trap Dungeon! ############\n\n" +
+                "What is your name, mighty warrior? ");
+            string name = Console.ReadLine();
+
+            Console.WriteLine("What manner of warrior are you?\n" +
+                "\t1) Barbarian (20-30 health | 0-8 damage)\n" +
+                "\t2) Wizard (15-25 health | 0-12 damage)\n" +
+                "\t3) Warlock (17-27 health | 0-10 damage)");
+            Hero hero = new Barbarian("name");
+            bool validHero = false;
+            while (!validHero)
+            {
+                validHero = true;
+                int choice = Valid_Int_Input("");
+                switch (choice)
+                {
+                    case 1:
+                        hero = new Barbarian(name);
+                        break;
+                    case 2:
+                        hero = new Wizard(name);
+                        break;
+                    case 3:
+                        hero = new Warlock(name);
+                        break;
+                    default:
+                        validHero = false;
+                        break;
+                }
+            }
+
+            Console.WriteLine("Which weapon is of your choosing?\n" +
+                "\t1) Sword (0-6 damage | 90% hit chance)");
+            Weapon weapon = new Sword();
+            bool validWeapon = false;
+            while (!validWeapon)
+            {
+                validWeapon = true;
+                int choice = Valid_Int_Input("");
+                switch (choice)
+                {
+                    case 1:
+                        weapon = new Sword();
+                        break;
+                    default:
+                        validWeapon = false;
+                        break;
+                }
+            }
+            weapon.Randomise_Modifier(1);
+            Console.WriteLine("You pick up a " + weapon.Name);
+            weapon.Inspect();
+
+            Console.WriteLine();
+
+            int victories = 0;
+            while (victories < 10 && hero.CurrentHP > 0)
+            {
+                Random random = new Random();
+                int monsterChoice = random.Next(0, 4);
+                Enemy monster = new Monster("colour");
+                switch (monsterChoice)
+                {
+                    case 0:
+                        monster = new Monster(Random_Colour());
+                        break;
+                    case 1:
+                        monster = new Goblin(Random_Colour());
+                        break;
+                    case 2:
+                        monster = new Vampire(Random_Colour());
+                        break;
+                    case 3:
+                        monster = new Slime(Random_Colour());
+                        break;
+                }
+
+                Console.WriteLine("You are attacked by a " + monster.Colour + " " + monster.Species + ".");
+                monster.Talk();
+                Combat(hero, weapon, monster);
+                if (hero.CurrentHP > 0)
+                {
+                    // won the fight
+                    int gold = monster.Gold;
+                    Console.WriteLine("The monster dropped " + gold + " gold coins.");
+                    hero.Gold += gold;
+                    victories++;
+                    Console.WriteLine("You are victorious! Press enter for the next battle!");
+                    Console.ReadLine();
+                    Console.WriteLine("Gold coins: " + hero.Gold);
+
+                    if (victories < 10)
+                    {
+                        Console.Write("Do you want to visit Ye Olde Dungeon Shoppe (Y/N) ");
+                        if (Console.ReadLine().ToLower() == "y")
+                        {
+                            weapon = Shop(hero, weapon);
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine(hero.Name + ", you are dead. Death Trap Dungeon claims another victim.");
+                }
+            }
+
+            if (victories == 10)
+            {
+                Console.WriteLine(hero.Name + ", you are the Champion of Champions! Fame and fortune are yours!\n" +
+                    "You leave the dungeon with " + hero.Gold + " gold coins!");
+            }
+            Console.WriteLine("######## GAME OVER ########");
+
+            Console.ReadLine();
         }
     }
 }
