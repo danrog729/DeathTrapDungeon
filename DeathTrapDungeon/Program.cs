@@ -167,10 +167,37 @@ namespace DeathTrapDungeon
             {
                 Console.WriteLine("\n######### Hero: " + hero.CurrentHP + " health #########" +
                     " Monster: " + monster.HitPoints + " health #########");
-                Console.WriteLine("Press enter to attack!");
-                Console.ReadLine();
-                int heroDamage = (int)Math.Sqrt(weapon.Attack() * hero.Attack());
-                monster.ReceiveDamage(heroDamage);
+                bool BaseAttack;
+                string Choice;
+                if (hero is Barbarian) //Hero Specific actions
+                {
+                    Console.WriteLine("Do you choose to rage? Y/N (This uses your turn but allows you to attack twice from next turn, however it also increases the damage you take)")
+                    Choice = Console.ReadLine();
+                    if (Choice.ToLower() == "y")
+                    {
+                        BaseAttack = false;
+                    }
+                }
+                else if (hero is Wizard)
+                {
+                    Console.WriteLine("Do you gather magic for a powerful arcane attack? Y/N (This will stun your foe ontop of your regular damage, but you can only use it once a fight)")
+                }
+                else if (hero is Warlock)
+                {
+                    Console.WriteLine("Do you sacrifice your lifeforce to obtain boons from your patron? Y/N (You loose 10% of your health but do double the damage")
+                    Base
+                }
+                else
+                {
+                    BaseAttack = true;
+                }
+                if (BaseAttack)
+                {
+                    Console.WriteLine("Press enter to attack!");
+                    Console.ReadLine();
+                    int heroDamage = (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+                    monster.ReceiveDamage(heroDamage);
+                }
                 if (monster.HitPoints > 0)
                 {
                     Console.WriteLine("The " + monster.Species + " attacks...");
