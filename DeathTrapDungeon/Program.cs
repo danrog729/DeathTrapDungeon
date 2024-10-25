@@ -67,7 +67,7 @@ namespace DeathTrapDungeon
                 //Hero specific actions
                 bool HeroAttack = true; //Basic hero attack
                 bool MonsterAttack = true; 
-                bool Special = false; //Each Hero types special ability
+                bool Special = false; //Each Hero type has a special ability
                 
                 if (hero is Barbarian & Cooldown == 0) 
                 {
@@ -124,20 +124,21 @@ namespace DeathTrapDungeon
                         monster.ReceiveDamage(heroDamage);
                     }
                 }
-                //Deffending
+                //Defending
                 if (monster.HitPoints > 0 & MonsterAttack)
                 {
                     Console.WriteLine("The " + monster.Species + " attacks...");
                     Console.WriteLine("Press enter to defend!");
                     Console.ReadLine();
-                    if (hero is Barbarian & Cooldown > 0) //Barbarians take 20% more damage whilst raging rounding up
+                    if (Cooldown > 0)
                     {
-                        hero.ReceiveDamage(Convert.ToInt32(Math.Ceiling(1.2*monster.Attack())));
+                        hero.ReceiveDamage(monster.Attack());
                     }
                     else
                     {
                         hero.ReceiveDamage(monster.Attack());
                     }
+            
                 }
                 //Ability refresh
                 if (Cooldown > 0)
@@ -300,20 +301,20 @@ namespace DeathTrapDungeon
             {
                 Random random = new Random();
                 int monsterChoice = random.Next(0, 4);
-                Enemy monster = new Monster("colour");
+                Enemy monster = new Monster("colour",0);
                 switch (monsterChoice)
                 {
                     case 0:
-                        monster = new Monster(Random_Colour());
+                        monster = new Monster(Random_Colour(),victories);
                         break;
                     case 1:
-                        monster = new Goblin(Random_Colour());
+                        monster = new Goblin(Random_Colour(),victories);
                         break;
                     case 2:
-                        monster = new Vampire(Random_Colour());
+                        monster = new Vampire(Random_Colour(),victories);
                         break;
                     case 3:
-                        monster = new Slime(Random_Colour());
+                        monster = new Slime(Random_Colour(),victories);
                         break;
                 }
 

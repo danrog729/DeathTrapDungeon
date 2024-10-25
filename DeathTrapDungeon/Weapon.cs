@@ -47,7 +47,7 @@ namespace DeathTrapDungeon
         protected string missMessage;
         protected string inspectMessage;
 
-        public Weapon()
+        public Weapon(string newName, int newDamage, int newDamageChance, string newHitMessage)
         {
             
         }
