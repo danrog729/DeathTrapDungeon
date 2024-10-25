@@ -21,7 +21,7 @@ namespace DeathTrapDungeon
                 "\t1) Barbarian (20-30 health | 0-8 damage)\n" +
                 "\t2) Wizard (15-25 health | 0-12 damage)\n" +
                 "\t3) Warlock (17-27 health | 0-10 damage)");
-            Hero hero = new Barbarian("name", new Sword());
+            Hero hero = new Barbarian("name");
             bool validHero = false;
             while (!validHero)
             {
@@ -30,13 +30,13 @@ namespace DeathTrapDungeon
                 switch (choice)
                 {
                     case 1:
-                        hero = new Barbarian(name, new Sword());
+                        hero = new Barbarian(name);
                         break;
                     case 2:
-                        hero = new Wizard(name, new Sword());
+                        hero = new Wizard(name);
                         break;
                     case 3:
-                        hero = new Warlock(name, new Sword());
+                        hero = new Warlock(name);
                         break;
                     default:
                         validHero = false;
@@ -45,13 +45,7 @@ namespace DeathTrapDungeon
             }
 
             Console.WriteLine("Which weapon is of your choosing?\n" +
-                "\t1) Sword (0-6 damage | 90% hit chance)\n" +
-                "\t2) Axe (0-8 damage | 70% hit chance)\n" +
-                "\t3) Dagger (0-5 damage | 100% hit chance)\n" +
-                "\t4) Scimitar (0-6 damage | 90% hit chance)\n" +
-                "\t5) Mace (0-6 damage | 90% hit chance)\n" +
-                "\t6) Hammer (0-9 damage | 60% hit chance)\n" +
-                "\t7) Fisticuffs (0-2 damage | 40% hit chance)\n");
+                "\t1) Sword (0-6 damage | 90% hit chance)");
             Weapon weapon = new Sword();
             bool validWeapon = false;
             while (!validWeapon)
@@ -63,32 +57,11 @@ namespace DeathTrapDungeon
                     case 1:
                         weapon = new Sword();
                         break;
-                    case 2:
-                        weapon = new Axe();
-                        break;
-                    case 3:
-                        weapon = new Dagger();
-                        break;
-                    case 4:
-                        weapon = new Scimitar();
-                        break;
-                    case 5:
-                        weapon = new Mace();
-                        break;
-                    case 6:
-                        weapon = new Hammer();
-                        break;
-                    case 7:
-                        weapon = new Fisticuffs();
-                        break;
                     default:
                         validWeapon = false;
                         break;
                 }
             }
-            hero.Inventory = new PlayerInventory(10);
-            hero.Inventory.AddItem(weapon);
-            hero.Inventory.ActiveWeaponSlot = 0;
             weapon.Randomise_Modifier(1);
             Console.WriteLine("You pick up a " + weapon.Name);
             weapon.Inspect();
@@ -119,7 +92,7 @@ namespace DeathTrapDungeon
 
                 Console.WriteLine("You are attacked by a " + monster.Colour + " " + monster.Species + ".");
                 monster.Talk();
-                Combat(hero, monster);
+                Combat(hero, weapon, monster);
                 if (hero.CurrentHP > 0)
                 {
                     // won the fight
@@ -136,13 +109,7 @@ namespace DeathTrapDungeon
                         Console.Write("Do you want to visit Ye Olde Dungeon Shoppe (Y/N) ");
                         if (Console.ReadLine().ToLower() == "y")
                         {
-                            Shop shop = new Shop();
-                            shop.EnterShop(hero);
-                        }
-                        Console.Write("Do you want to enter your inventory (Y/N) ");
-                        if (Console.ReadLine().ToLower() == "y")
-                        {
-                            hero.Inventory.AccessInventory();
+                            weapon = Shop(hero, weapon);
                         }
                     }
                 }
@@ -162,7 +129,7 @@ namespace DeathTrapDungeon
             Console.ReadLine();
         }
 
-        static bool AbilityChoice(string Message)
+        static bool AbilityChoiceInput(string Message)
         {
             Console.WriteLine(Message);
             string Choice = Console.ReadLine();
@@ -207,70 +174,79 @@ namespace DeathTrapDungeon
             }
         }
 
-        static void Combat(Hero hero, Enemy monster)
+        static void AbilityDecision(Hero hero, out bool HeroAttack, out bool MonsterAttack)
         {
-            int Cooldown= 0; // Cooldown includes cast turn, so "3 turns of cooldown after cast turn" - Cooldown = 4
+            HeroAttack = true;
+            MonsterAttack = false;
+            if (hero is Barbarian & hero.Cooldown == 0)
+            {
+                if (AbilityChoiceInput("Do you choose to rage? Y/N\nThis uses your turn but allows you to attack twice from next turn, however it also increases the damage you take\nThis ability lasts 3 turns | 1 turn cooldown"))
+                {
+                    hero.Special = true;
+                    HeroAttack = false;
+                    hero.Cooldown = 4;
+                }
+            }
+            else if (hero is Wizard & hero.Cooldown == 0)
+            {
+                if (AbilityChoiceInput("Do you gather magic for a powerful arcane attack? Y/N \nThis will stun your foe and triple your regular damage\nYou can only use it once a fight"))
+                {
+                    hero.Special = true;
+                    MonsterAttack = false;
+                    hero.Cooldown = -1; // Will only be available once per fight
+                }
+            }
+            else if (hero is Warlock & hero.Cooldown == 0 & hero.CurrentHP > 1)
+            {
+                if (AbilityChoiceInput("Do you sacrifice your lifeforce to obtain boons from your patron? Y/N\nYou loose 10% of your health but do double damage\nThis ability has a 2 turn cooldown"))
+                {
+                    hero.Special = true;
+                    hero.ReceiveDamage(Convert.ToInt32(Math.Ceiling(hero.CurrentHP * 0.1)));
+                    hero.Cooldown = 3;
+                }
+            }
+        }
+        static int HeroAttacks(Hero hero)
+        {
+            int heroDamage;
+            if (hero.Special == true & hero is Wizard)
+            {
+                heroDamage = 3 * (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+            }
+            else if (hero.Special == true & hero is Warlock)
+            {
+                heroDamage = 2 * (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+            }
+            else
+            {
+                heroDamage = (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+            }
+            return heroDamage;
+        }
+
+        static void Combat(Hero hero, Weapon weapon, Enemy monster)
+        {
+
             while (hero.CurrentHP > 0 && monster.HitPoints > 0)
             {
                 Console.WriteLine("\n######### Hero: " + hero.CurrentHP + " health #########" +
                     " Monster: " + monster.HitPoints + " health #########");
                 //Hero specific actions
-                bool HeroAttack = true; //Basic hero attack
-                bool MonsterAttack = true; 
-                bool Special = false; //Each Hero types special ability
-                
-                if (hero is Barbarian & Cooldown == 0) 
-                {
-                    if (AbilityChoice("Do you choose to rage? Y/N\nThis uses your turn but allows you to attack twice from next turn, however it also increases the damage you take\nThis ability lasts 3 turns | 1 turn cooldown"))
-                    {
-                        Special = true;
-                        HeroAttack = false;
-                        Cooldown = 4;
-                    }
-                }
-                else if (hero is Wizard & Cooldown == 0)   
-                {
-                    if (AbilityChoice("Do you gather magic for a powerful arcane attack? Y/N \nThis will stun your foe and triple your regular damage\nYou can only use it once a fight"))
-                    {
-                        Special = true;
-                        MonsterAttack = false;
-                        Cooldown = -1; // Will only be available once per fight
-                    }
-                }
-                else if (hero is Warlock & Cooldown == 0 & hero.CurrentHP > 1)
-                {
-                    if (AbilityChoice("Do you sacrifice your lifeforce to obtain boons from your patron? Y/N\nYou loose 10% of your health but do double damage\nThis ability has a 2 turn cooldown"))
-                    {
-                        Special = true;
-                        hero.ReceiveDamage(Convert.ToInt32(Math.Ceiling(hero.CurrentHP * 0.1)));
-                        Cooldown = 3;
-                    }
-                }
+                AbilityDecision(hero, out bool HeroAttack, out bool MonsterAttack); //Inputs players choice if to use Hero specific actions
                 //Attacking
                 if (HeroAttack)
                 {
-                    Console.WriteLine("Press enter to attack!");
                     int heroDamage;
+                    Console.WriteLine("Press enter to attack!");
                     Console.ReadLine();
-                    if (Special & hero is Wizard)
-                    {
-                        heroDamage = 3 * (int)Math.Sqrt(hero.Inventory.GetActiveWeapon().Attack().Damage * hero.Attack());
-                    }
-                    else if (Special & hero is Warlock)
-                    {
-                        heroDamage = 2 * (int)Math.Sqrt(hero.Inventory.GetActiveWeapon().Attack().Damage * hero.Attack());
-                    }
-                    else
-                    {
-                        heroDamage = (int)Math.Sqrt(hero.Inventory.GetActiveWeapon().Attack().Damage * hero.Attack());
-                    }
+                    heroDamage = HeroAttacks(hero);
                     monster.ReceiveDamage(heroDamage);
                     //Special actions
-                    if (monster.HitPoints > 0 & hero is Barbarian & Cooldown > 0)
+                    if (monster.HitPoints > 0 & hero is Barbarian & hero.Cooldown > 0)
                     {
                         Console.WriteLine("Press enter to attack again");
                         Console.ReadLine();
-                        heroDamage = (int)Math.Sqrt(hero.Inventory.GetActiveWeapon().Attack().Damage * hero.Attack());
+                        heroDamage = (int)Math.Sqrt(weapon.Attack() * hero.Attack());
                         monster.ReceiveDamage(heroDamage);
                     }
                 }
@@ -280,21 +256,16 @@ namespace DeathTrapDungeon
                     Console.WriteLine("The " + monster.Species + " attacks...");
                     Console.WriteLine("Press enter to defend!");
                     Console.ReadLine();
-                    if (hero is Barbarian & Cooldown > 0) //Barbarians take 20% more damage whilst raging rounding up
-                    {
-                        hero.ReceiveDamage(Convert.ToInt32(Math.Ceiling(1.2*monster.Attack())));
-                    }
-                    else
-                    {
-                        hero.ReceiveDamage(monster.Attack());
-                    }
+                    hero.ReceiveDamage(monster.Attack());
                 }
                 //Ability refresh
-                if (Cooldown > 0)
+                if (hero.Cooldown > 0)
                 {
-                    Cooldown --;
+                    hero.Cooldown--;
                 }
             }
         }
+
+
     }
 }

@@ -121,7 +121,6 @@ namespace DeathTrapDungeon
             damageModifier = DamageModifier;
         }
     }
-
     public class Sword : Weapon
     {
         public Sword() : base(

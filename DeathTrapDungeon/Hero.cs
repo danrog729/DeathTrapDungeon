@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace DeathTrapDungeon
 {
@@ -41,6 +43,25 @@ namespace DeathTrapDungeon
                 _gold = value;
             }
         }
+        protected int _cooldown;
+        public int Cooldown
+        {
+            get => _cooldown;
+            set
+            {
+                _cooldown = Cooldown;
+            }
+        }
+        protected bool _special;
+
+        public bool Special
+        {
+            get => _special;
+            set
+            {
+                _special = Special;
+            }
+        }
 
         public PlayerInventory Inventory;
 
@@ -52,6 +73,8 @@ namespace DeathTrapDungeon
             _currentHP = _originalHP;
             _maxDamage = maxDamage;
             Gold = 0;
+            Cooldown = 0;  // Cooldown includes cast turn, so "3 turns of cooldown after cast turn" - Cooldown = 4
+            Special = false;
             Inventory = new PlayerInventory(15);
             Inventory.AddItem(currentWeapon);
             Inventory.ActiveWeaponSlot = 0;
@@ -63,7 +86,7 @@ namespace DeathTrapDungeon
             return random.Next(0, _maxDamage + 1);
         }
 
-        public void ReceiveDamage(int damage)
+        public virtual void ReceiveDamage(int damage)
         {
             _currentHP -= damage;
         }
@@ -97,10 +120,15 @@ namespace DeathTrapDungeon
     {
         public Barbarian(string name, Weapon weapon) : base(name, 20, 31, 8, weapon)
         {
-
+        }
+        public override void ReceiveDamage(int Damage) //Barbarians take 20% more damage whilst raging rounding up
+        {
+            if (Cooldown > 0)
+            {
+                _currentHP -= Convert.ToInt32(Math.Ceiling(1.2 * Damage));
+            }
         }
     }
-
     public class Wizard : Hero
     {
         public Wizard(string name, Weapon weapon) : base(name, 15, 26, 12, weapon)
