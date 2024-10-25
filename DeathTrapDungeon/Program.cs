@@ -12,7 +12,7 @@ namespace DeathTrapDungeon
     internal class Program
     {
         
-        static bool AbilityChoice(string Message)
+        static bool AbilityChoiceInput(string Message)
         {
             Console.WriteLine(Message);
             string Choice = Console.ReadLine();
@@ -57,6 +57,56 @@ namespace DeathTrapDungeon
             }
         }
 
+        static void AbilityDecision(Hero hero,out bool HeroAttack, out bool MonsterAttack)
+        {
+            HeroAttack = true;
+            MonsterAttack = false;
+            if (hero is Barbarian & hero.Cooldown == 0)
+            {
+                if (AbilityChoiceInput("Do you choose to rage? Y/N\nThis uses your turn but allows you to attack twice from next turn, however it also increases the damage you take\nThis ability lasts 3 turns | 1 turn cooldown"))
+                {
+                    hero.Special = true;
+                    HeroAttack = false;
+                    hero.Cooldown = 4;
+                }
+            }
+            else if (hero is Wizard & hero.Cooldown == 0)
+            {
+                if (AbilityChoiceInput("Do you gather magic for a powerful arcane attack? Y/N \nThis will stun your foe and triple your regular damage\nYou can only use it once a fight"))
+                {
+                    hero.Special = true;
+                    MonsterAttack = false;
+                    hero.Cooldown = -1; // Will only be available once per fight
+                }
+            }
+            else if (hero is Warlock & hero.Cooldown == 0 & hero.CurrentHP > 1)
+            {
+                if (AbilityChoiceInput("Do you sacrifice your lifeforce to obtain boons from your patron? Y/N\nYou loose 10% of your health but do double damage\nThis ability has a 2 turn cooldown"))
+                {
+                    hero.Special = true;
+                    hero.ReceiveDamage(Convert.ToInt32(Math.Ceiling(hero.CurrentHP * 0.1)));
+                    hero.Cooldown = 3;
+                }
+            }
+        }
+        static int HeroAttacks(Hero hero)
+        {
+            int heroDamage;
+            if (hero.Special == true & hero is Wizard)
+            {
+                heroDamage = 3 * (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+            }
+            else if (hero.Special == true & hero is Warlock)
+            {
+                heroDamage = 2 * (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+            }
+            else
+            {
+                heroDamage = (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+            }
+            return heroDamage;
+        }
+
         static void Combat(Hero hero, Weapon weapon, Enemy monster)
         {
             
@@ -65,53 +115,14 @@ namespace DeathTrapDungeon
                 Console.WriteLine("\n######### Hero: " + hero.CurrentHP + " health #########" +
                     " Monster: " + monster.HitPoints + " health #########");
                 //Hero specific actions
-                bool HeroAttack = true; //Basic hero attack
-                bool MonsterAttack = true; 
-                if (hero is Barbarian & hero.Cooldown == 0) 
-                {
-                    if (AbilityChoice("Do you choose to rage? Y/N\nThis uses your turn but allows you to attack twice from next turn, however it also increases the damage you take\nThis ability lasts 3 turns | 1 turn cooldown"))
-                    {
-                        hero.Special = true;
-                        HeroAttack = false;
-                        hero.Cooldown = 4;
-                    }
-                }
-                else if (hero is Wizard & hero.Cooldown == 0)   
-                {
-                    if (AbilityChoice("Do you gather magic for a powerful arcane attack? Y/N \nThis will stun your foe and triple your regular damage\nYou can only use it once a fight"))
-                    {
-                        hero.Special = true;
-                        MonsterAttack = false;
-                        hero.Cooldown = -1; // Will only be available once per fight
-                    }
-                }
-                else if (hero is Warlock & hero.Cooldown == 0 & hero.CurrentHP > 1)
-                {
-                    if (AbilityChoice("Do you sacrifice your lifeforce to obtain boons from your patron? Y/N\nYou loose 10% of your health but do double damage\nThis ability has a 2 turn cooldown"))
-                    {
-                        hero.Special = true;
-                        hero.ReceiveDamage(Convert.ToInt32(Math.Ceiling(hero.CurrentHP * 0.1)));
-                        hero.Cooldown = 3;
-                    }
-                }
+                AbilityDecision(hero, out bool HeroAttack, out bool MonsterAttack); //Inputs players choice if to use Hero specific actions
                 //Attacking
                 if (HeroAttack)
                 {
-                    Console.WriteLine("Press enter to attack!");
                     int heroDamage;
+                    Console.WriteLine("Press enter to attack!");
                     Console.ReadLine();
-                    if (hero.Special == true & hero is Wizard)
-                    {
-                        heroDamage = 3 * (int)Math.Sqrt(weapon.Attack() * hero.Attack());
-                    }
-                    else if (hero.Special == true & hero is Warlock)
-                    {
-                        heroDamage = 2 * (int)Math.Sqrt(weapon.Attack() * hero.Attack());
-                    }
-                    else
-                    {
-                        heroDamage = (int)Math.Sqrt(weapon.Attack() * hero.Attack());
-                    }
+                    heroDamage = HeroAttacks(hero);
                     monster.ReceiveDamage(heroDamage);
                     //Special actions
                     if (monster.HitPoints > 0 & hero is Barbarian & hero.Cooldown > 0)
@@ -129,7 +140,6 @@ namespace DeathTrapDungeon
                     Console.WriteLine("Press enter to defend!");
                     Console.ReadLine();
                     hero.ReceiveDamage(monster.Attack());
-            
                 }
                 //Ability refresh
                 if (hero.Cooldown > 0)
