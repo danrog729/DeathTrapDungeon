@@ -11,7 +11,157 @@ namespace DeathTrapDungeon
 {
     internal class Program
     {
-        
+        static void Main(string[] args)
+        {
+            Console.Write("############# Welcome to Death Trap Dungeon! ############\n\n" +
+                "What is your name, mighty warrior? ");
+            string name = Console.ReadLine();
+
+            Console.WriteLine("What manner of warrior are you?\n" +
+                "\t1) Barbarian (20-30 health | 0-8 damage)\n" +
+                "\t2) Wizard (15-25 health | 0-12 damage)\n" +
+                "\t3) Warlock (17-27 health | 0-10 damage)");
+            Hero hero = new Barbarian("name", new Sword());
+            bool validHero = false;
+            while (!validHero)
+            {
+                validHero = true;
+                int choice = Valid_Int_Input("");
+                switch (choice)
+                {
+                    case 1:
+                        hero = new Barbarian(name, new Sword());
+                        break;
+                    case 2:
+                        hero = new Wizard(name, new Sword());
+                        break;
+                    case 3:
+                        hero = new Warlock(name, new Sword());
+                        break;
+                    default:
+                        validHero = false;
+                        break;
+                }
+            }
+
+            Console.WriteLine("Which weapon is of your choosing?\n" +
+                "\t1) Sword (0-6 damage | 90% hit chance)\n" +
+                "\t2) Axe (0-8 damage | 70% hit chance)\n" +
+                "\t3) Dagger (0-5 damage | 100% hit chance)\n" +
+                "\t4) Scimitar (0-6 damage | 90% hit chance)\n" +
+                "\t5) Mace (0-6 damage | 90% hit chance)\n" +
+                "\t6) Hammer (0-9 damage | 60% hit chance)\n" +
+                "\t7) Fisticuffs (0-2 damage | 40% hit chance)\n");
+            Weapon weapon = new Sword();
+            bool validWeapon = false;
+            while (!validWeapon)
+            {
+                validWeapon = true;
+                int choice = Valid_Int_Input("");
+                switch (choice)
+                {
+                    case 1:
+                        weapon = new Sword();
+                        break;
+                    case 2:
+                        weapon = new Axe();
+                        break;
+                    case 3:
+                        weapon = new Dagger();
+                        break;
+                    case 4:
+                        weapon = new Scimitar();
+                        break;
+                    case 5:
+                        weapon = new Mace();
+                        break;
+                    case 6:
+                        weapon = new Hammer();
+                        break;
+                    case 7:
+                        weapon = new Fisticuffs();
+                        break;
+                    default:
+                        validWeapon = false;
+                        break;
+                }
+            }
+            hero.Inventory = new PlayerInventory(10);
+            hero.Inventory.AddItem(weapon);
+            hero.Inventory.ActiveWeaponSlot = 0;
+            weapon.Randomise_Modifier(1);
+            Console.WriteLine("You pick up a " + weapon.Name);
+            weapon.Inspect();
+
+            Console.WriteLine();
+
+            int victories = 0;
+            while (victories < 10 && hero.CurrentHP > 0)
+            {
+                Random random = new Random();
+                int monsterChoice = random.Next(0, 4);
+                Enemy monster = new Monster("colour");
+                switch (monsterChoice)
+                {
+                    case 0:
+                        monster = new Monster(Random_Colour());
+                        break;
+                    case 1:
+                        monster = new Goblin(Random_Colour());
+                        break;
+                    case 2:
+                        monster = new Vampire(Random_Colour());
+                        break;
+                    case 3:
+                        monster = new Slime(Random_Colour());
+                        break;
+                }
+
+                Console.WriteLine("You are attacked by a " + monster.Colour + " " + monster.Species + ".");
+                monster.Talk();
+                Combat(hero, monster);
+                if (hero.CurrentHP > 0)
+                {
+                    // won the fight
+                    int gold = monster.Gold;
+                    Console.WriteLine("The monster dropped " + gold + " gold coins.");
+                    hero.Gold += gold;
+                    victories++;
+                    Console.WriteLine("You are victorious! Press enter for the next battle!");
+                    Console.ReadLine();
+                    Console.WriteLine("Gold coins: " + hero.Gold);
+
+                    if (victories < 10)
+                    {
+                        Console.Write("Do you want to visit Ye Olde Dungeon Shoppe (Y/N) ");
+                        if (Console.ReadLine().ToLower() == "y")
+                        {
+                            Shop shop = new Shop();
+                            shop.EnterShop(hero);
+                        }
+                        Console.Write("Do you want to enter your inventory (Y/N) ");
+                        if (Console.ReadLine().ToLower() == "y")
+                        {
+                            hero.Inventory.AccessInventory();
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine(hero.Name + ", you are dead. Death Trap Dungeon claims another victim.");
+                }
+            }
+
+            if (victories == 10)
+            {
+                Console.WriteLine(hero.Name + ", you are the Champion of Champions! Fame and fortune are yours!\n" +
+                    "You leave the dungeon with " + hero.Gold + " gold coins!");
+            }
+            Console.WriteLine("######## GAME OVER ########");
+
+            Console.ReadLine();
+        }
+
         static bool AbilityChoice(string Message)
         {
             Console.WriteLine(Message);
@@ -25,7 +175,7 @@ namespace DeathTrapDungeon
                 return false;
             }
         }
-        static int Valid_Int_Input(string message)
+        public static int Valid_Int_Input(string message)
         {
             int output;
             do
@@ -57,7 +207,7 @@ namespace DeathTrapDungeon
             }
         }
 
-        static void Combat(Hero hero, Weapon weapon, Enemy monster)
+        static void Combat(Hero hero, Enemy monster)
         {
             int Cooldown= 0; // Cooldown includes cast turn, so "3 turns of cooldown after cast turn" - Cooldown = 4
             while (hero.CurrentHP > 0 && monster.HitPoints > 0)
@@ -104,15 +254,15 @@ namespace DeathTrapDungeon
                     Console.ReadLine();
                     if (Special & hero is Wizard)
                     {
-                        heroDamage = 3 * (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+                        heroDamage = 3 * (int)Math.Sqrt(hero.Inventory.GetActiveWeapon().Attack().Damage * hero.Attack());
                     }
                     else if (Special & hero is Warlock)
                     {
-                        heroDamage = 2 * (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+                        heroDamage = 2 * (int)Math.Sqrt(hero.Inventory.GetActiveWeapon().Attack().Damage * hero.Attack());
                     }
                     else
                     {
-                        heroDamage = (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+                        heroDamage = (int)Math.Sqrt(hero.Inventory.GetActiveWeapon().Attack().Damage * hero.Attack());
                     }
                     monster.ReceiveDamage(heroDamage);
                     //Special actions
@@ -120,11 +270,11 @@ namespace DeathTrapDungeon
                     {
                         Console.WriteLine("Press enter to attack again");
                         Console.ReadLine();
-                        heroDamage = (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+                        heroDamage = (int)Math.Sqrt(hero.Inventory.GetActiveWeapon().Attack().Damage * hero.Attack());
                         monster.ReceiveDamage(heroDamage);
                     }
                 }
-                //Deffending
+                //Defending
                 if (monster.HitPoints > 0 & MonsterAttack)
                 {
                     Console.WriteLine("The " + monster.Species + " attacks...");
@@ -145,215 +295,6 @@ namespace DeathTrapDungeon
                     Cooldown --;
                 }
             }
-        }
-
-        static Weapon Shop(Hero hero, Weapon weapon)
-        {
-            Weapon newWeapon = weapon;
-            bool shouldContinue = true;
-            while (shouldContinue)
-            {
-                Console.WriteLine("\n############## Welcome to Ye Olde Dungeon Shoppe! ##########\n" +
-                    "1) Buy basic health potion (+2-8 health)\t\t 2 gold\n" +
-                    "2) Buy standard health potion (+4-12 health)\t\t 4 gold\n" +
-                    "3) Buy Axe of Fire (0-8 damage | 80% damage chance)\t\t 8 gold\n" +
-                    "4) Buy Sword of Souls (0-10 damage | 95% damage chance)\t\t 12 gold\n" +
-                    "5) Exit shoppe");
-                Console.WriteLine("Your current gold: " + hero.Gold);
-                bool validSelection = false;
-                while (!validSelection)
-                {
-                    validSelection = true;
-                    int choice = Valid_Int_Input("Select option: ");
-                    switch (choice)
-                    {
-                        case 1:
-                            {
-                                Random random = new Random();
-                                int healthPotion = random.Next(2, 9);
-                                if (hero.Purchase(2))
-                                {
-                                    Console.WriteLine("\nYou swig a health potion. You recover " + healthPotion + " HP.");
-                                    hero.Heal(healthPotion);
-                                }
-                                else
-                                {
-                                    Console.WriteLine("\nYou do not have enough gold.");
-                                }
-                                break;
-                            }
-                        case 2:
-                            {
-                                Random random = new Random();
-                                int healthPotion = random.Next(4, 13);
-                                if (hero.Purchase(4))
-                                {
-                                    Console.WriteLine("\nYou swig a health potion. You recover " + healthPotion + " HP.");
-                                    hero.Heal(healthPotion);
-                                }
-                                else
-                                {
-                                    Console.WriteLine("\nYou do not have enough gold.");
-                                }
-                                break;
-                            }
-                        case 3:
-                            {
-                                if (hero.Purchase(8))
-                                {
-                                    newWeapon = new AxeOfFlames();
-                                    Console.WriteLine("You pick up a " + newWeapon.Name);
-                                    newWeapon.Inspect();
-                                }
-                                else
-                                {
-                                    Console.WriteLine("\nYou do not have enough gold.");
-                                }
-                                break;
-                            }
-                        case 4:
-                            {
-                                if (hero.Purchase(12))
-                                {
-                                    newWeapon = new SwordOfSouls();
-                                    Console.WriteLine("You pick up a " + newWeapon.Name);
-                                    newWeapon.Inspect();
-                                }
-                                else
-                                {
-                                    Console.WriteLine("\nYou do not have enough gold.");
-                                }
-                                break;
-                            }
-                        case 5:
-                            return newWeapon;
-                        default:
-                            Console.WriteLine("This item does not exist!");
-                            validSelection = false;
-                            break;
-                    }
-                }
-                Console.Write("\nDo you want to make another purchase? (Y/N) ");
-                shouldContinue = Console.ReadLine().ToLower() == "y";
-            }
-            return newWeapon;
-        }
-        static void Main(string[] args)
-        {
-            Console.Write("############# Welcome to Death Trap Dungeon! ############\n\n" +
-                "What is your name, mighty warrior? ");
-            string name = Console.ReadLine();
-
-            Console.WriteLine("What manner of warrior are you?\n" +
-                "\t1) Barbarian (20-30 health | 0-8 damage)\n" +
-                "\t2) Wizard (15-25 health | 0-12 damage)\n" +
-                "\t3) Warlock (17-27 health | 0-10 damage)");
-            Hero hero = new Barbarian("name");
-            bool validHero = false;
-            while (!validHero)
-            {
-                validHero = true;
-                int choice = Valid_Int_Input("");
-                switch (choice)
-                {
-                    case 1:
-                        hero = new Barbarian(name);
-                        break;
-                    case 2:
-                        hero = new Wizard(name);
-                        break;
-                    case 3:
-                        hero = new Warlock(name);
-                        break;
-                    default:
-                        validHero = false;
-                        break;
-                }
-            }
-
-            Console.WriteLine("Which weapon is of your choosing?\n" +
-                "\t1) Sword (0-6 damage | 90% hit chance)");
-            Weapon weapon = new Sword();
-            bool validWeapon = false;
-            while (!validWeapon)
-            {
-                validWeapon = true;
-                int choice = Valid_Int_Input("");
-                switch (choice)
-                {
-                    case 1:
-                        weapon = new Sword();
-                        break;
-                    default:
-                        validWeapon = false;
-                        break;
-                }
-            }
-            weapon.Randomise_Modifier(1);
-            Console.WriteLine("You pick up a " + weapon.Name);
-            weapon.Inspect();
-
-            Console.WriteLine();
-
-            int victories = 0;
-            while (victories < 10 && hero.CurrentHP > 0)
-            {
-                Random random = new Random();
-                int monsterChoice = random.Next(0, 4);
-                Enemy monster = new Monster("colour");
-                switch (monsterChoice)
-                {
-                    case 0:
-                        monster = new Monster(Random_Colour());
-                        break;
-                    case 1:
-                        monster = new Goblin(Random_Colour());
-                        break;
-                    case 2:
-                        monster = new Vampire(Random_Colour());
-                        break;
-                    case 3:
-                        monster = new Slime(Random_Colour());
-                        break;
-                }
-
-                Console.WriteLine("You are attacked by a " + monster.Colour + " " + monster.Species + ".");
-                monster.Talk();
-                Combat(hero, weapon, monster);
-                if (hero.CurrentHP > 0)
-                {
-                    // won the fight
-                    int gold = monster.Gold;
-                    Console.WriteLine("The monster dropped " + gold + " gold coins.");
-                    hero.Gold += gold;
-                    victories++;
-                    Console.WriteLine("You are victorious! Press enter for the next battle!");
-                    Console.ReadLine();
-                    Console.WriteLine("Gold coins: " + hero.Gold);
-
-                    if (victories < 10)
-                    {
-                        Console.Write("Do you want to visit Ye Olde Dungeon Shoppe (Y/N) ");
-                        if (Console.ReadLine().ToLower() == "y")
-                        {
-                            weapon = Shop(hero, weapon);
-                        }
-                    }
-                }
-                else
-                {
-                    Console.WriteLine(hero.Name + ", you are dead. Death Trap Dungeon claims another victim.");
-                }
-            }
-
-            if (victories == 10)
-            {
-                Console.WriteLine(hero.Name + ", you are the Champion of Champions! Fame and fortune are yours!\n" +
-                    "You leave the dungeon with " + hero.Gold + " gold coins!");
-            }
-            Console.WriteLine("######## GAME OVER ########");
-
-            Console.ReadLine();
         }
     }
 }
