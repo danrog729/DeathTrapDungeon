@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace DeathTrapDungeon
 {
@@ -58,7 +60,7 @@ namespace DeathTrapDungeon
             return random.Next(0, _maxDamage + 1);
         }
 
-        public void ReceiveDamage(int damage)
+        public virtual void ReceiveDamage(int damage)
         {
             _currentHP -= damage;
         }
@@ -90,23 +92,26 @@ namespace DeathTrapDungeon
     {
         public Barbarian(string name) : base(name, 20, 31, 8)
         {
-
         }
-    }
-
-    public class Wizard : Hero
-    {
-        public Wizard(string name) : base(name, 15, 26, 12)
+        public override void ReceiveDamage(int Damage) //Barbarians take 20% more damage whilst raging rounding up
         {
-
+            _currentHP -= Convert.ToInt32(Math.Ceiling(1.2 * Damage));
         }
-    }
 
-    public class Warlock : Hero
-    {
-        public Warlock(string name) : base(name, 17, 28, 10)
+        public class Wizard : Hero
         {
+            public Wizard(string name) : base(name, 15, 26, 12)
+            {
 
+            }
+        }
+
+        public class Warlock : Hero
+        {
+            public Warlock(string name) : base(name, 17, 28, 10)
+            {
+
+            }
         }
     }
 }

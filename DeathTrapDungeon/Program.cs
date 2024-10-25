@@ -124,20 +124,21 @@ namespace DeathTrapDungeon
                         monster.ReceiveDamage(heroDamage);
                     }
                 }
-                //Deffending
+                //Defending
                 if (monster.HitPoints > 0 & MonsterAttack)
                 {
                     Console.WriteLine("The " + monster.Species + " attacks...");
                     Console.WriteLine("Press enter to defend!");
                     Console.ReadLine();
-                    if (hero is Barbarian & Cooldown > 0) //Barbarians take 20% more damage whilst raging rounding up
+                    if (Cooldown > 0)
                     {
-                        hero.ReceiveDamage(Convert.ToInt32(Math.Ceiling(1.2*monster.Attack())));
+                        hero.ReceiveDamage(monster.Attack());
                     }
                     else
                     {
                         hero.ReceiveDamage(monster.Attack());
                     }
+            
                 }
                 //Ability refresh
                 if (Cooldown > 0)
