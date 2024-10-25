@@ -71,12 +71,12 @@ namespace DeathTrapDungeon
             }
         }
 
-        public Enemy(string newColour, string newSpecies, int newHP, int newMaxDamage, string newAttackMessage, int newGoldLowerBound, int newGoldUpperBound)
+        public Enemy(string newColour, int newLevel, string newSpecies, int newHP, int newMaxDamage, string newAttackMessage, int newGoldLowerBound, int newGoldUpperBound)
         {
             _colour = newColour;
             _species = newSpecies;
-            _hitPoints = newHP;
-            _maxDamage = newMaxDamage;
+            _hitPoints = Convert.ToInt32(Math.Ceiling(Convert.ToDecimal(newHP)*(1+newLevel/10)));
+            _maxDamage = Convert.ToInt32(Math.Ceiling(Convert.ToDecimal(newMaxDamage) * (1 + newLevel / 10)));
             _attackMessage = newAttackMessage;
             Random random = new Random();
             _gold = random.Next(newGoldLowerBound, newGoldUpperBound);
@@ -123,7 +123,7 @@ namespace DeathTrapDungeon
 
     public class Monster : Enemy
     {
-        public Monster(string newColour) : base(newColour, "monster", 10, 5, "It slashes with its razor sharp claws.", 4, 7)
+        public Monster(string newColour, int newLevel) : base(newColour, newLevel, "monster", 10, 5, "It slashes with its razor sharp claws.", 4, 7)
         {
 
         }
@@ -136,7 +136,7 @@ namespace DeathTrapDungeon
 
     public class Goblin : Enemy
     {
-        public Goblin(string newColour) : base(newColour, "goblin", 12, 6, "It hits you with a club.", 4, 13)
+        public Goblin(string newColour, int newLevel) : base(newColour, newLevel, "goblin", 12, 6, "It hits you with a club.", 4, 13)
         {
 
         }
@@ -149,7 +149,7 @@ namespace DeathTrapDungeon
 
     public class Vampire : Enemy
     {
-        public Vampire(string newColour) : base(newColour, "vampire", 20, 7, "It sinks its fangs into your neck.", 3, 11)
+        public Vampire(string newColour, int newLevel) : base(newColour, newLevel, "vampire", 20, 7, "It sinks its fangs into your neck.", 3, 11)
         {
 
         }
@@ -162,7 +162,7 @@ namespace DeathTrapDungeon
 
     public class Slime : Enemy
     {
-        public Slime(string newColour) : base(newColour, "slime", 8, 4, "It tries to engulf you.", 0, 7)
+        public Slime(string newColour, int newLevel) : base(newColour, newLevel, "slime", 8, 4, "It tries to engulf you.", 0, 7)
         {
 
         }
