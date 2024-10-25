@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DeathTrapDungeon
 {
-    public class Hero
+    public abstract class Hero
     {
         protected string _name;
         public string Name
@@ -42,13 +42,13 @@ namespace DeathTrapDungeon
             }
         }
 
-        public Hero(string name)
+        public Hero(string name, int minHP, int maxHP, int maxDamage)
         {
             _name = name;
             Random random = new Random();
-            _originalHP = random.Next(20, 31);
+            _originalHP = random.Next(minHP, maxHP);
             _currentHP = _originalHP;
-            _maxDamage = 6;
+            _maxDamage = maxDamage;
             Gold = 0;
         }
 
@@ -88,40 +88,25 @@ namespace DeathTrapDungeon
 
     public class Barbarian : Hero
     {
-        public Barbarian(string name) : base(name)
+        public Barbarian(string name) : base(name, 20, 31, 8)
         {
-            _name = name;
-            Random random = new Random();
-            _originalHP = random.Next(20, 31);
-            _currentHP = _originalHP;
-            _maxDamage = 8;
-            Gold = 0;
+
         }
     }
 
     public class Wizard : Hero
     {
-        public Wizard(string name) : base(name)
+        public Wizard(string name) : base(name, 15, 26, 12)
         {
-            _name = name;
-            Random random = new Random();
-            _originalHP = random.Next(15, 26);
-            _currentHP = _originalHP;
-            _maxDamage = 12;
-            Gold = 0;
+
         }
     }
 
     public class Warlock : Hero
     {
-        public Warlock(string name) : base(name)
+        public Warlock(string name) : base(name, 17, 28, 10)
         {
-            _name = name;
-            Random random = new Random();
-            _originalHP = random.Next(17, 28);
-            _currentHP = _originalHP;
-            _maxDamage = 10;
-            Gold = 0;
+
         }
     }
 }
