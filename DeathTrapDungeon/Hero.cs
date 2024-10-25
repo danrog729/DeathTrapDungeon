@@ -43,6 +43,25 @@ namespace DeathTrapDungeon
                 _gold = value;
             }
         }
+        protected int _cooldown;
+        public int Cooldown
+        {
+            get => _cooldown;
+            set
+            {
+                _cooldown = Cooldown;
+            }
+        }
+        protected bool _special;
+
+        public bool Special
+        {
+            get => _special;
+            set
+            {
+                _special = Special;
+            }
+        }
 
         public Hero(string name, int minHP, int maxHP, int maxDamage)
         {
@@ -52,6 +71,8 @@ namespace DeathTrapDungeon
             _currentHP = _originalHP;
             _maxDamage = maxDamage;
             Gold = 0;
+            Cooldown = 0;  // Cooldown includes cast turn, so "3 turns of cooldown after cast turn" - Cooldown = 4
+            Special = false;
         }
 
         public int Attack()
@@ -95,23 +116,25 @@ namespace DeathTrapDungeon
         }
         public override void ReceiveDamage(int Damage) //Barbarians take 20% more damage whilst raging rounding up
         {
-            _currentHP -= Convert.ToInt32(Math.Ceiling(1.2 * Damage));
-        }
-
-        public class Wizard : Hero
-        {
-            public Wizard(string name) : base(name, 15, 26, 12)
+            if (Cooldown > 0)
             {
-
+                _currentHP -= Convert.ToInt32(Math.Ceiling(1.2 * Damage));
             }
         }
-
-        public class Warlock : Hero
+    }
+    public class Wizard : Hero
+    {
+        public Wizard(string name) : base(name, 15, 26, 12)
         {
-            public Warlock(string name) : base(name, 17, 28, 10)
-            {
 
-            }
+        }
+    }
+
+    public class Warlock : Hero
+    {
+        public Warlock(string name) : base(name, 17, 28, 10)
+        {
+
         }
     }
 }
