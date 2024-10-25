@@ -105,7 +105,6 @@ namespace DeathTrapDungeon
             damageModifier = DamageModifier;
         }
     }
-
     public class Sword : Weapon
     {
         public Sword() : base()
@@ -119,8 +118,6 @@ namespace DeathTrapDungeon
             inspectMessage = "Your sword feels solid in your hands.";
         }
     }
-
-    
 
     public class AxeOfFlames : Weapon
     {
