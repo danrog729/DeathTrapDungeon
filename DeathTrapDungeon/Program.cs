@@ -21,7 +21,7 @@ namespace DeathTrapDungeon
                 "\t1) Barbarian (20-30 health | 0-8 damage)\n" +
                 "\t2) Wizard (15-25 health | 0-12 damage)\n" +
                 "\t3) Warlock (17-27 health | 0-10 damage)");
-            Hero hero = new Barbarian("name");
+            Hero hero = new Barbarian("name", new Sword());
             bool validHero = false;
             while (!validHero)
             {
@@ -30,13 +30,13 @@ namespace DeathTrapDungeon
                 switch (choice)
                 {
                     case 1:
-                        hero = new Barbarian(name);
+                        hero = new Barbarian(name, new Sword());
                         break;
                     case 2:
-                        hero = new Wizard(name);
+                        hero = new Wizard(name, new Sword());
                         break;
                     case 3:
-                        hero = new Warlock(name);
+                        hero = new Warlock(name, new Sword());
                         break;
                     default:
                         validHero = false;
@@ -65,6 +65,9 @@ namespace DeathTrapDungeon
             weapon.Randomise_Modifier(1);
             Console.WriteLine("You pick up a " + weapon.Name);
             weapon.Inspect();
+            hero.Inventory = new PlayerInventory(hero.Inventory.Size);
+            hero.Inventory.AddItem(weapon);
+            hero.Inventory.ActiveWeaponSlot = 0;
 
             Console.WriteLine();
 
@@ -109,7 +112,8 @@ namespace DeathTrapDungeon
                         Console.Write("Do you want to visit Ye Olde Dungeon Shoppe (Y/N) ");
                         if (Console.ReadLine().ToLower() == "y")
                         {
-                            weapon = Shop(hero, weapon);
+                            Shop shop = new Shop();
+                            shop.EnterShop(hero);
                         }
                     }
                 }
@@ -211,15 +215,15 @@ namespace DeathTrapDungeon
             int heroDamage;
             if (hero.Special == true & hero is Wizard)
             {
-                heroDamage = 3 * (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+                heroDamage = 3 * (int)Math.Sqrt(hero.Inventory.GetActiveWeapon().Attack().Damage * hero.Attack());
             }
             else if (hero.Special == true & hero is Warlock)
             {
-                heroDamage = 2 * (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+                heroDamage = 2 * (int)Math.Sqrt(hero.Inventory.GetActiveWeapon().Attack().Damage * hero.Attack());
             }
             else
             {
-                heroDamage = (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+                heroDamage = (int)Math.Sqrt(hero.Inventory.GetActiveWeapon().Attack().Damage * hero.Attack());
             }
             return heroDamage;
         }
@@ -246,7 +250,7 @@ namespace DeathTrapDungeon
                     {
                         Console.WriteLine("Press enter to attack again");
                         Console.ReadLine();
-                        heroDamage = (int)Math.Sqrt(weapon.Attack() * hero.Attack());
+                        heroDamage = (int)Math.Sqrt(hero.Inventory.GetActiveWeapon().Attack().Damage * hero.Attack());
                         monster.ReceiveDamage(heroDamage);
                     }
                 }

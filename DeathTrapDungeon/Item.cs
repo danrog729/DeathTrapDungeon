@@ -15,12 +15,17 @@ namespace DeathTrapDungeon
             set => _value = value;
         }
 
-        private string _inspectMessage;
+        private readonly string _inspectMessage;
 
         public Item(int value, string inspectMessage)
         {
             _value = value;
             _inspectMessage = inspectMessage;
+        }
+
+        public void Inspect()
+        {
+            Console.WriteLine(_inspectMessage);
         }
     }
 
