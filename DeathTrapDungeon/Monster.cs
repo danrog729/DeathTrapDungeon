@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace DeathTrapDungeon
 {
@@ -75,8 +68,9 @@ namespace DeathTrapDungeon
         {
             _colour = newColour;
             _species = newSpecies;
-            _hitPoints = Convert.ToInt32(Math.Ceiling(Convert.ToDecimal(newHP)*(1+newLevel/10)));
-            _maxDamage = Convert.ToInt32(Math.Ceiling(Convert.ToDecimal(newMaxDamage) * (1 + newLevel / 10)));
+            // adds a multiplier to the stats: 1.0 for first, 1.1 for second, 1.2 for third, usw.
+            _hitPoints = Convert.ToInt32(Math.Ceiling(Convert.ToDecimal(newHP) * (1 + newLevel / 10))); // converts to decimal to solve ambiguity for ceiling (not liked)
+            _maxDamage = Convert.ToInt32(Math.Ceiling(Convert.ToDecimal(newMaxDamage) * (1 + newLevel / 10))); 
             _attackMessage = newAttackMessage;
             Random random = new Random();
             _gold = random.Next(newGoldLowerBound, newGoldUpperBound);
