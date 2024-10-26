@@ -76,26 +76,26 @@ namespace DeathTrapDungeon
             {
                 Random random = new Random();
                 int monsterChoice = random.Next(0, 4);
-                Enemy monster = new Monster("colour");
+                Enemy monster = new Monster("colour", victories);
                 switch (monsterChoice)
                 {
                     case 0:
-                        monster = new Monster(Random_Colour());
+                        monster = new Monster(Random_Colour(), victories);
                         break;
                     case 1:
-                        monster = new Goblin(Random_Colour());
+                        monster = new Goblin(Random_Colour(), victories);
                         break;
                     case 2:
-                        monster = new Vampire(Random_Colour());
+                        monster = new Vampire(Random_Colour(), victories);
                         break;
                     case 3:
-                        monster = new Slime(Random_Colour());
+                        monster = new Slime(Random_Colour(), victories);
                         break;
                 }
 
                 Console.WriteLine("You are attacked by a " + monster.Colour + " " + monster.Species + ".");
                 monster.Talk();
-                Combat(hero, weapon, monster);
+                Combat(hero, monster);
                 if (hero.CurrentHP > 0)
                 {
                     // won the fight
@@ -109,7 +109,7 @@ namespace DeathTrapDungeon
 
                     if (victories < 10)
                     {
-                        Console.Write("Do you want to visit Ye Olde Dungeon Shoppe (Y/N) ");
+                        Console.Write("Do you want to visit Ye Olde Dungeon Shoppe? (Y/N) ");
                         if (Console.ReadLine().ToLower() == "y")
                         {
                             Shop shop = new Shop();
@@ -228,7 +228,7 @@ namespace DeathTrapDungeon
             return heroDamage;
         }
 
-        static void Combat(Hero hero, Weapon weapon, Enemy monster)
+        static void Combat(Hero hero, Enemy monster)
         {
 
             while (hero.CurrentHP > 0 && monster.HitPoints > 0)

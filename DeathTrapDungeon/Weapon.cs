@@ -99,11 +99,6 @@ namespace DeathTrapDungeon
             return new DamageType(GenerateDamageValue());
         }
 
-        public void Inspect()
-        {
-            Console.WriteLine(inspectMessage);
-        }
-
         public override string ToString()
         {
             return Name;
